@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "453777378204",
+    "project_id": "alisverissepeti-10270",
+    "storage_bucket": "alisverissepeti-10270.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453777378204:android:3ba5c5faf390c0407d1659",
+        "android_client_info": {
+          "package_name": "com.example.alisveris_sepeti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwMs76yk8GnRJ5V_5AWvMjDm8lJU6ZFck"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
