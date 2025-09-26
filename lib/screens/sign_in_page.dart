@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'sign_up_page.dart';
+import 'package:provider/provider.dart';
+import 'package:alisveris_sepeti/services/auth_service.dart';
+import 'package:alisveris_sepeti/screens/sign_up_page.dart';
+import 'package:alisveris_sepeti/widgets/auth_form.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -12,43 +14,43 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _auth = FirebaseAuth.instance;
-  String errorMessage = '';
+  String _errorMessage = '';
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final errorMessage = await authService.signIn(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
+
+    if (errorMessage != null && mounted) {
+      setState(() {
+        _errorMessage = errorMessage;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Giriş Yap')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-posta'),
+            AuthForm(
+              buttonText: 'Giriş Yap',
+              emailController: _emailController,
+              passwordController: _passwordController,
+              onSubmitted: _signIn,
+              errorMessage: _errorMessage,
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Şifre'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  await _auth.signInWithEmailAndPassword(
-                    email: _emailController.text.trim(),
-                    password: _passwordController.text.trim(),
-                  );
-                } on FirebaseAuthException catch (e) {
-                  setState(() {
-                    errorMessage = e.message ?? 'Bilinmeyen hata';
-                  });
-                }
-              },
-              child: const Text('Giriş Yap'),
-            ),
-            Text(errorMessage, style: const TextStyle(color: Colors.red)),
             TextButton(
               onPressed: () {
                 Navigator.push(
