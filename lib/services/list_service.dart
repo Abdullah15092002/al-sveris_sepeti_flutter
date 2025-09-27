@@ -1,3 +1,4 @@
+// Alışveriş listeleriyle ilgili Firestore işlemlerini yönetir.
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ListService {
@@ -5,6 +6,7 @@ class ListService {
     'lists',
   );
 
+  // Yeni bir kişisel liste oluşturur.
   Future<void> createList(String title, String ownerId) async {
     if (title.trim().isEmpty) return;
     await listsRef.add({
@@ -15,6 +17,7 @@ class ListService {
     });
   }
 
+  // Belirli bir gruba ait yeni bir liste oluşturur.
   Future<void> createListByGroup(
     String title, {
     required String ownerId,
@@ -36,10 +39,12 @@ class ListService {
     await listsRef.add(data);
   }
 
+  // Belirli bir listeyi siler.
   Future<void> deleteList(String listId) async {
     await listsRef.doc(listId).delete();
   }
 
+  // Bir listeye yeni bir ürün ekler.
   Future<void> addItem(String listId, String itemName) async {
     if (itemName.trim().isEmpty) return;
     final listDoc = listsRef.doc(listId);
@@ -50,6 +55,7 @@ class ListService {
     });
   }
 
+  // Bir listenin tüm ürün dizisini günceller (ürün işaretleme vb. için).
   Future<void> updateItems(
     String listId,
     List<Map<String, dynamic>> items,
@@ -57,7 +63,7 @@ class ListService {
     await listsRef.doc(listId).update({"items": items});
   }
 
-  // DEĞİŞİKLİK: Yeni eklenen metod - Tek bir ürünü atomik olarak siler.
+  // Bir listeden belirli bir ürünü atomik olarak siler.
   Future<void> removeItem(String listId, Map<String, dynamic> item) async {
     await listsRef.doc(listId).update({
       "items": FieldValue.arrayRemove([item]),

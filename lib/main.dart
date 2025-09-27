@@ -1,3 +1,4 @@
+// Uygulamanın başlangıç noktası (entry point). Firebase'i başlatır ve ana widget'ı çalıştırır.
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,12 +17,12 @@ void main() async {
   runApp(const MyApp());
 }
 
+// Uygulamanın kök widget'ı. MaterialApp, tema ve provider'ları ayarlar.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // DEĞİŞİKLİK: Uygulama genelinde servisleri erişilebilir kılmak için MultiProvider kullanılıyor.
     return MultiProvider(
       providers: [
         Provider<AuthService>(create: (_) => AuthService()),
@@ -31,13 +32,18 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Ortak Alışveriş Listesi',
-        theme: ThemeData(primarySwatch: Colors.deepPurple),
+        debugShowCheckedModeBanner: false, // Debug etiketini kaldırır
+        theme: ThemeData(
+          primarySwatch: Colors.deepPurple,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
         home: const AuthWrapper(),
       ),
     );
   }
 }
 
+// Kullanıcının giriş durumunu dinler ve HomePage veya SignInPage'e yönlendirir.
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 

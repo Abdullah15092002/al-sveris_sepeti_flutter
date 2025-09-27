@@ -1,10 +1,10 @@
+// Belirli bir alışveriş listesinin içindeki ürünleri gösterir ve yönetir.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:alisveris_sepeti/services/list_service.dart';
 import 'package:alisveris_sepeti/widgets/delete_icon_button.dart';
 
-// DEĞİŞİKLİK 1: StatelessWidget -> StatefulWidget
 class ListDetailPage extends StatefulWidget {
   final String listId;
   final String title;
@@ -16,13 +16,12 @@ class ListDetailPage extends StatefulWidget {
 }
 
 class _ListDetailPageState extends State<ListDetailPage> {
-  // DEĞİŞİKLİK 1.1: Stream'i tutacak değişken
   late final Stream<DocumentSnapshot> _listStream;
 
+  // Sayfa ilk yüklendiğinde liste verisini dinleyecek stream'i başlatır.
   @override
   void initState() {
     super.initState();
-    // DEĞİŞİKLİK 1.2: Stream'i SADECE BİR KEZ oluştur
     final listService = Provider.of<ListService>(context, listen: false);
     _listStream = listService.listsRef.doc(widget.listId).snapshots();
   }
@@ -32,7 +31,6 @@ class _ListDetailPageState extends State<ListDetailPage> {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
       body: StreamBuilder<DocumentSnapshot>(
-        // DEĞİŞİKLİK 1.3: initState'te oluşturulan stream'i kullan
         stream: _listStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -61,7 +59,6 @@ class _ListDetailPageState extends State<ListDetailPage> {
                         : null,
                   ),
                 ),
-                // DEĞİŞİKLİK 2: trailing, Checkbox ve DeleteIconButton içeren bir Row oldu.
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -79,7 +76,6 @@ class _ListDetailPageState extends State<ListDetailPage> {
                         listService.updateItems(widget.listId, updatedItems);
                       },
                     ),
-                    // DEĞİŞİKLİK 3: DeleteIconButton buraya eklendi.
                     DeleteIconButton(
                       itemType: "Ürün",
                       itemName: itemName,
@@ -93,7 +89,6 @@ class _ListDetailPageState extends State<ListDetailPage> {
                     ),
                   ],
                 ),
-                // DEĞİŞİKLİK 2.1: onLongPress artık gereksiz olduğu için kaldırıldı.
               );
             },
           );
@@ -106,6 +101,7 @@ class _ListDetailPageState extends State<ListDetailPage> {
     );
   }
 
+  // Yeni ürün eklemek için bir dialog penceresi gösterir.
   void _showAddItemDialog(BuildContext context) {
     final listService = Provider.of<ListService>(context, listen: false);
     final controller = TextEditingController();

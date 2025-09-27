@@ -1,3 +1,4 @@
+// Kullanıcının profil bilgilerini gösterir ve düzenlemesine olanak tanır.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,7 +19,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool _loading = true;
   String _errorMessage = '';
-  // YENİ: Davet kodunu tutacak state değişkeni
   String _inviteCode = '';
 
   @override
@@ -27,6 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
+  // Firestore'dan kullanıcının mevcut verilerini yükler.
   Future<void> _loadUserData() async {
     final userService = Provider.of<UserService>(context, listen: false);
     try {
@@ -35,7 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
         final data = doc.data() as Map<String, dynamic>?;
         _nameController.text = data?['name'] ?? '';
         _surnameController.text = data?['surname'] ?? '';
-        // DEĞİŞİKLİK: Davet kodunu da data'dan alıyoruz
         setState(() {
           _inviteCode = data?['inviteCode'] ?? 'Kod bulunamadı';
         });
@@ -55,6 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // Kullanıcının yaptığı değişiklikleri Firestore'a kaydeder.
   Future<void> _saveChanges() async {
     final userService = Provider.of<UserService>(context, listen: false);
     try {
@@ -62,7 +63,6 @@ class _ProfilePageState extends State<ProfilePage> {
         _user.uid,
         name: _nameController.text.trim(),
         surname: _surnameController.text.trim(),
-        email: _user.email,
       );
 
       if (mounted) {
@@ -94,11 +94,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
-      // DEĞİŞİKLİK: Arayüzü ListView ile sarmalıyoruz (daha esnek bir yapı)
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // DEĞİŞİKLİK: Bilgileri Card widget'ları içinde grupluyoruz
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -114,16 +112,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    // İsim ve soyisim boşsa e-postayı göster
                     (_nameController.text.isEmpty &&
                             _surnameController.text.isEmpty)
                         ? _user.email!
                         : '${_nameController.text} ${_surnameController.text}',
                     style: Theme.of(context).textTheme.titleLarge,
+                    textAlign: TextAlign.center,
                   ),
                   if (_nameController.text.isNotEmpty ||
                       _surnameController.text.isNotEmpty)
-                    Text(_user.email!),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(_user.email!),
+                    ),
                 ],
               ),
             ),
@@ -143,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     "Bilgileri Düzenle",
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   TextField(
                     controller: _nameController,
                     decoration: const InputDecoration(
@@ -164,7 +165,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: 20),
-          // DEĞİŞİKLİK: UID yerine davet kodunu gösteren yeni Card
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -185,7 +185,6 @@ class _ProfilePageState extends State<ProfilePage> {
               trailing: IconButton(
                 icon: const Icon(Icons.copy, size: 20),
                 onPressed: () {
-                  // DEĞİŞİKLİK: Artık davet kodunu kopyalıyoruz
                   Clipboard.setData(ClipboardData(text: _inviteCode));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Davet kodu kopyalandı!')),

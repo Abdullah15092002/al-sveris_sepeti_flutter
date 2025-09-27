@@ -1,4 +1,5 @@
-import 'package:alisveris_sepeti/list/list_detail_page.dart';
+// Kullanıcının kendisine ait olan kişisel alışveriş listelerini gösterir.
+import 'package:alisveris_sepeti/screens/list_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +17,7 @@ class MyListsPage extends StatefulWidget {
 class _MyListsPageState extends State<MyListsPage> {
   late final Stream<QuerySnapshot> _myListsStream;
 
+  // Sayfa ilk yüklendiğinde kullanıcının listelerini dinleyecek stream'i başlatır.
   @override
   void initState() {
     super.initState();
@@ -42,7 +44,7 @@ class _MyListsPageState extends State<MyListsPage> {
             return Center(child: Text("Bir hata oluştu: ${snapshot.error}"));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("Henüz listen yok"));
+            return const Center(child: Text("Henüz kişisel listen yok"));
           }
 
           final docs = snapshot.data!.docs;
@@ -51,8 +53,6 @@ class _MyListsPageState extends State<MyListsPage> {
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
-
-              // EKSİK OLAN SATIRLAR BURAYA EKLENDİ
               final listId = docs[index].id;
               final listTitle = data['title'] ?? 'Adsız Liste';
 
@@ -94,6 +94,7 @@ class _MyListsPageState extends State<MyListsPage> {
     );
   }
 
+  // Yeni bir kişisel liste oluşturmak için dialog penceresi gösterir.
   void _showAddListDialog(BuildContext context) {
     final listService = Provider.of<ListService>(context, listen: false);
     final userId = FirebaseAuth.instance.currentUser!.uid;

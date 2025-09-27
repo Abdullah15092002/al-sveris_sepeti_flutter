@@ -1,3 +1,4 @@
+// Yeni kullanıcıların e-posta ve şifre ile uygulamaya kaydolmasını sağlar.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:alisveris_sepeti/services/auth_service.dart';
@@ -22,16 +23,18 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
+  // AuthService'i kullanarak yeni kullanıcı kaydı oluşturur ve hata yönetimi yapar.
   Future<void> _signUp() async {
     final authService = Provider.of<AuthService>(context, listen: false);
+    // Not: Bu kısım, isim/soyisim almayan eski signUp metodunuza göre çalışır.
+    // AuthService'i buna göre düzenlemeniz gerekebilir.
     final errorMessage = await authService.signUp(
       email: _emailController.text,
       password: _passwordController.text,
     );
 
     if (errorMessage == null && mounted) {
-      // Başarılı olursa geri dön
-      Navigator.pop(context);
+      Navigator.pop(context); // Başarılı olursa bir önceki sayfaya döner.
     } else if (mounted) {
       setState(() {
         _errorMessage = errorMessage!;

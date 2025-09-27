@@ -1,3 +1,4 @@
+// Giriş ve kayıt sayfalarında kullanılan, yeniden kullanılabilir form widget'ı.
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatelessWidget {
@@ -27,19 +28,22 @@ class AuthForm extends StatelessWidget {
             decoration: const InputDecoration(labelText: 'E-posta'),
             keyboardType: TextInputType.emailAddress,
           ),
+          const SizedBox(height: 12),
           TextField(
             controller: passwordController,
             decoration: const InputDecoration(labelText: 'Şifre'),
             obscureText: true,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           ElevatedButton(onPressed: onSubmitted, child: Text(buttonText)),
-          const SizedBox(height: 10),
           if (errorMessage.isNotEmpty)
-            Text(
-              errorMessage,
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Text(
+                errorMessage,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
             ),
         ],
       ),

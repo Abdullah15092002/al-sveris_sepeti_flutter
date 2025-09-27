@@ -1,3 +1,4 @@
+// Gruplarla ilgili Firestore işlemlerini (oluşturma, silme, davet etme) yönetir.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -9,6 +10,7 @@ class GroupService {
     'users',
   );
 
+  // Yeni bir grup oluşturur ve oluşturan kişiyi ilk üye olarak ekler.
   Future<void> createGroup(String name, String userId) async {
     if (name.trim().isEmpty) return;
     await groupsRef.add({
@@ -19,6 +21,7 @@ class GroupService {
     });
   }
 
+  // Davet kodu kullanarak bir kullanıcıyı gruba davet eder.
   Future<String?> inviteUserByCode({
     required String inviteCode,
     required String groupId,
@@ -26,12 +29,8 @@ class GroupService {
   }) async {
     if (inviteCode.trim().isEmpty) return "Davet kodu boş olamaz.";
 
-    // 1. Davet koduna sahip kullanıcıyı bul
     final userQuery = await usersRef
-        .where(
-          'inviteCode',
-          isEqualTo: inviteCode.trim().toUpperCase(),
-        ) // Kodları büyük harf saklıyorsak
+        .where('inviteCode', isEqualTo: inviteCode.trim().toUpperCase())
         .limit(1)
         .get();
 
@@ -39,7 +38,6 @@ class GroupService {
       return "Bu davet koduna sahip bir kullanıcı bulunamadı.";
     }
 
-    // 2. Kullanıcıyı bulduysak, onun ID'sini alıp davet gönder
     final invitedUserId = userQuery.docs.first.id;
     final currentUser = FirebaseAuth.instance.currentUser!;
 
@@ -56,29 +54,26 @@ class GroupService {
         },
       ]),
     });
-    return null; // Başarılı
+    return null;
   }
 
+  // Bir grubu ve o gruba ait tüm listeleri basamaklı olarak siler.
   Future<void> deleteGroup(String groupId) async {
     final db = FirebaseFirestore.instance;
     final batch = db.batch();
 
-    // 1. Adım: Silinecek gruba ait tüm listeleri bul
     final listsQuery = db
         .collection('lists')
         .where('groupId', isEqualTo: groupId);
     final listsSnapshot = await listsQuery.get();
 
-    // 2. Adım: Bulunan her bir listeyi silme işlemi için batch'e ekle
     for (final doc in listsSnapshot.docs) {
       batch.delete(doc.reference);
     }
 
-    // 3. Adım: Ana grup belgesini silme işlemi için batch'e ekle
     final groupRef = groupsRef.doc(groupId);
     batch.delete(groupRef);
 
-    // 4. Adım: Tüm silme işlemlerini tek seferde sunucuya gönder
     await batch.commit();
   }
 }

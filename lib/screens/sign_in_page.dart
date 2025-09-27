@@ -1,3 +1,4 @@
+// Kullanıcının e-posta ve şifre ile uygulamaya giriş yapmasını sağlar.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:alisveris_sepeti/services/auth_service.dart';
@@ -23,6 +24,7 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
+  // AuthService'i kullanarak kullanıcı girişini dener ve hata yönetimi yapar.
   Future<void> _signIn() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     final errorMessage = await authService.signIn(

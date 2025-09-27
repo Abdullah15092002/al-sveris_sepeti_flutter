@@ -1,3 +1,4 @@
+// Kullanıcının dahil olduğu grupları listeler ve yeni grup oluşturmaya olanak tanır.
 import 'package:alisveris_sepeti/screens/group_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +17,7 @@ class GroupsPage extends StatefulWidget {
 class _GroupsPageState extends State<GroupsPage> {
   late final Stream<QuerySnapshot> _myGroupsStream;
 
+  // Sayfa ilk yüklendiğinde kullanıcının gruplarını dinleyecek stream'i başlatır.
   @override
   void initState() {
     super.initState();
@@ -82,8 +84,6 @@ class _GroupsPageState extends State<GroupsPage> {
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
                       final data = docs[index].data() as Map<String, dynamic>;
-
-                      // HATA BURADAYDI: Bu üç satır eksikti.
                       final groupId = docs[index].id;
                       final groupName = data['name'] ?? 'Adsız Grup';
                       final ownerId = data['ownerId'] as String;
@@ -129,6 +129,7 @@ class _GroupsPageState extends State<GroupsPage> {
     );
   }
 
+  // Yeni bir grup oluşturmak için dialog penceresi gösterir.
   void _showCreateGroupDialog(
     BuildContext context,
     GroupService groupService,

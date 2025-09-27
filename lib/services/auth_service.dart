@@ -1,9 +1,11 @@
+// Firebase Authentication işlemlerini (giriş, kayıt, çıkış) yönetir.
 import 'package:alisveris_sepeti/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Kullanıcının e-posta ve şifre ile giriş yapmasını sağlar.
   Future<String?> signIn({
     required String email,
     required String password,
@@ -13,12 +15,13 @@ class AuthService {
         email: email.trim(),
         password: password.trim(),
       );
-      return null; // Başarılıysa null döner
+      return null;
     } on FirebaseAuthException catch (e) {
-      return e.message; // Hata mesajını döner
+      return e.message;
     }
   }
 
+  // Yeni bir kullanıcı kaydı oluşturur ve Firestore'da kullanıcı belgesini tetikler.
   Future<String?> signUp({
     required String email,
     required String password,
@@ -28,19 +31,20 @@ class AuthService {
         email: email.trim(),
         password: password.trim(),
       );
+
       if (userCredential.user != null) {
         await UserService().createUserDocument(
-          userCredential.user!.uid,
-          email.trim(),
+          uid: userCredential.user!.uid,
+          email: email.trim(),
         );
       }
-
-      return null; // Başarılıysa null döner
+      return null;
     } on FirebaseAuthException catch (e) {
-      return e.message; // Hata mesajını döner
+      return e.message;
     }
   }
 
+  // Mevcut kullanıcının oturumunu kapatır.
   Future<void> signOut() async {
     await _auth.signOut();
   }

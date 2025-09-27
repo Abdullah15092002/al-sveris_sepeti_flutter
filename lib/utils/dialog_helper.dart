@@ -1,7 +1,4 @@
-// Bu fonksiyon, uygulama genelinde "Emin misin?" dialogları göstermek için kullanılacak.
-// title: Dialog başlığı (örn: "Listeyi Sil")
-// content: Dialog içeriği (örn: "'Alışveriş' listesini silmek istediğine emin misin?")
-// onConfirm: "Sil" butonuna basıldığında çalıştırılacak olan asenkron fonksiyon.
+// Uygulama genelinde yeniden kullanılabilir bir onay dialog'u gösterir.
 import 'package:flutter/material.dart';
 
 Future<void> showConfirmDialog({
@@ -22,7 +19,6 @@ Future<void> showConfirmDialog({
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(dialogContext, true),
-          // Stili kırmızı yaparak daha dikkat çekici hale getirelim
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           child: const Text("Sil"),
         ),
@@ -30,8 +26,6 @@ Future<void> showConfirmDialog({
     ),
   );
 
-  // Kullanıcı "Sil" butonuna bastıysa (true döndüyse)
-  // kendisine verilen onConfirm fonksiyonunu çalıştır.
   if (didConfirm == true) {
     await onConfirm();
   }

@@ -1,3 +1,4 @@
+// Kullanıcı giriş yaptıktan sonra karşılaştığı ana yönlendirme sayfasıdır.
 import 'package:alisveris_sepeti/screens/group_page.dart';
 import 'package:alisveris_sepeti/screens/mylists_page.dart';
 import 'package:alisveris_sepeti/screens/profil_page.dart';
@@ -15,31 +16,35 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
-    final userService = Provider.of<UserService>(context);
+    final userService = Provider.of<UserService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alışveriş Dashboard'),
+        title: const Text('Alışveriş Listem'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Çıkış Yap',
             onPressed: () => authService.signOut(),
           ),
+          // Kullanıcının davet sayısını gösteren bildirim ikonu
           StreamBuilder<DocumentSnapshot>(
             stream: userService.getInvitesStream(user.uid),
             builder: (context, snapshot) {
               int inviteCount = 0;
-              if (snapshot.hasData) {
+              if (snapshot.hasData && snapshot.data!.exists) {
                 final data = snapshot.data!.data() as Map<String, dynamic>?;
                 final invites = data?['groupInvites'] ?? [];
                 inviteCount = (invites as List).length;
               }
 
               return Stack(
+                alignment: Alignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.mail),
+                    icon: const Icon(Icons.mail_outline),
+                    tooltip: 'Grup Davetleri',
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -68,7 +73,6 @@ class HomePage extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -79,9 +83,10 @@ class HomePage extends StatelessWidget {
             },
           ),
           IconButton(
+            tooltip: 'Profil',
             icon: const CircleAvatar(
-              radius: 15,
-              child: Icon(Icons.person, size: 20),
+              radius: 16,
+              child: Icon(Icons.person, size: 18),
             ),
             onPressed: () {
               Navigator.push(
@@ -93,31 +98,44 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton.icon(
-              icon: const Icon(Icons.list),
-              label: const Text("My Lists"),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MyListsPage()),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.group),
-              label: const Text("Groups"),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const GroupsPage()),
-                );
-              },
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Butonların daha belirgin olması için stil eklendi
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+                icon: const Icon(Icons.list_alt),
+                label: const Text("Listelerim"),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MyListsPage()),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+                icon: const Icon(Icons.group),
+                label: const Text("Gruplarım"),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const GroupsPage()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
