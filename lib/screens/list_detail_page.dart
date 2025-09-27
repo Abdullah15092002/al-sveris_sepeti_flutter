@@ -30,7 +30,7 @@ class _ListDetailPageState extends State<ListDetailPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      imagePath: 'assets/images/background_peach.png',
+      imagePath: 'assets/images/white.jpeg',
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.transparent,

@@ -34,7 +34,7 @@ class _MyListsPageState extends State<MyListsPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      imagePath: 'assets/images/background_green.png',
+      imagePath: 'assets/images/white.jpeg',
       appBar: AppBar(
         title: const Text("Benim Listelerim"),
         backgroundColor: Colors.transparent,
