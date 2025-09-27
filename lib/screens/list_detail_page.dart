@@ -30,90 +30,95 @@ class _ListDetailPageState extends State<ListDetailPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      imagePath: 'assets/images/red.jpeg',
+      imagePath: 'assets/images/background_peach.png',
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _listStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: SafeArea(
+        child: StreamBuilder<DocumentSnapshot>(
+          stream: _listStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data?.data() == null) {
+              return const Center(
+                  child: Text('Liste bulunamadı veya silinmiş.'));
+            }
 
-          if (!snapshot.hasData || snapshot.data?.data() == null) {
-            return const Center(child: Text('Liste bulunamadı veya silinmiş.'));
-          }
+            final data = snapshot.data!.data() as Map<String, dynamic>;
+            final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
 
-          final data = snapshot.data!.data() as Map<String, dynamic>;
-          final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
-
-          if (items.isEmpty) {
-            return const Center(
-              child: Card(
-                color: Colors.white70,
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Bu listede henüz ürün yok.\nYeni bir ürün eklemek için + butonunu kullan.",
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final itemName = item['name'] as String;
-
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                color: Colors.white.withOpacity(0.9),
-                elevation: 4,
-                child: ListTile(
-                  title: Text(
-                    itemName,
-                    style: TextStyle(
-                      decoration:
-                          item['done'] ? TextDecoration.lineThrough : null,
+            if (items.isEmpty) {
+              return const Center(
+                child: Card(
+                  color: Colors.white70,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      "Bu listede henüz ürün yok.\nYeni bir ürün eklemek için + butonunu kullan.",
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Checkbox(
-                        value: item['done'],
-                        onChanged: (val) {
-                          final listService =
-                              Provider.of<ListService>(context, listen: false);
-                          final updatedItems =
-                              List<Map<String, dynamic>>.from(items);
-                          updatedItems[index]['done'] = val;
-                          listService.updateItems(widget.listId, updatedItems);
-                        },
-                      ),
-                      DeleteIconButton(
-                        itemType: "Ürün",
-                        itemName: itemName,
-                        onDelete: () async {
-                          final listService =
-                              Provider.of<ListService>(context, listen: false);
-                          await listService.removeItem(widget.listId, item);
-                        },
-                      ),
-                    ],
                   ),
                 ),
               );
-            },
-          );
-        },
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final itemName = item['name'] as String;
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  color: Colors.white.withOpacity(0.9),
+                  elevation: 4,
+                  child: ListTile(
+                    title: Text(
+                      itemName,
+                      style: TextStyle(
+                        decoration:
+                            item['done'] ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Checkbox(
+                          value: item['done'],
+                          onChanged: (val) {
+                            final listService = Provider.of<ListService>(
+                                context,
+                                listen: false);
+                            final updatedItems =
+                                List<Map<String, dynamic>>.from(items);
+                            updatedItems[index]['done'] = val;
+                            listService.updateItems(
+                                widget.listId, updatedItems);
+                          },
+                        ),
+                        DeleteIconButton(
+                          itemType: "Ürün",
+                          itemName: itemName,
+                          onDelete: () async {
+                            final listService = Provider.of<ListService>(
+                                context,
+                                listen: false);
+                            await listService.removeItem(widget.listId, item);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddItemDialog(context),

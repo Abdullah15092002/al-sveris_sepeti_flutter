@@ -34,76 +34,79 @@ class _MyListsPageState extends State<MyListsPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      imagePath: 'assets/images/white.jpeg',
+      imagePath: 'assets/images/background_green.png',
       appBar: AppBar(
         title: const Text("Benim Listelerim"),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _myListsStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text("Bir hata oluştu: ${snapshot.error}"));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Card(
-                color: Colors.white70,
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Henüz kişisel listen yok.\nYeni bir liste eklemek için + butonunu kullan.",
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            );
-          }
-
-          final docs = snapshot.data!.docs;
-
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 8),
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              final listId = docs[index].id;
-              final listTitle = data['title'] ?? 'Adsız Liste';
-
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                color: Colors.white.withOpacity(0.9),
-                elevation: 4,
-                child: ListTile(
-                  title: Text(listTitle),
-                  subtitle: Text("Ürün sayısı: ${data['items']?.length ?? 0}"),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ListDetailPage(listId: listId, title: listTitle),
-                      ),
-                    );
-                  },
-                  trailing: DeleteIconButton(
-                    itemType: "Liste",
-                    itemName: listTitle,
-                    onDelete: () async {
-                      final listService =
-                          Provider.of<ListService>(context, listen: false);
-                      await listService.deleteList(listId);
-                    },
+      body: SafeArea(
+        child: StreamBuilder<QuerySnapshot>(
+          stream: _myListsStream,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text("Bir hata oluştu: ${snapshot.error}"));
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Card(
+                  color: Colors.white70,
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      "Henüz kişisel listen yok.\nYeni bir liste eklemek için + butonunu kullan.",
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               );
-            },
-          );
-        },
+            }
+
+            final docs = snapshot.data!.docs;
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final data = docs[index].data() as Map<String, dynamic>;
+                final listId = docs[index].id;
+                final listTitle = data['title'] ?? 'Adsız Liste';
+
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  color: Colors.white.withOpacity(0.9),
+                  elevation: 4,
+                  child: ListTile(
+                    title: Text(listTitle),
+                    subtitle:
+                        Text("Ürün sayısı: ${data['items']?.length ?? 0}"),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              ListDetailPage(listId: listId, title: listTitle),
+                        ),
+                      );
+                    },
+                    trailing: DeleteIconButton(
+                      itemType: "Liste",
+                      itemName: listTitle,
+                      onDelete: () async {
+                        final listService =
+                            Provider.of<ListService>(context, listen: false);
+                        await listService.deleteList(listId);
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddListDialog(context),
