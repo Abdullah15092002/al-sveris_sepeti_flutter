@@ -1,5 +1,6 @@
 // Kullanıcının dahil olduğu grupları listeler ve yeni grup oluşturmaya olanak tanır.
 import 'package:alisveris_sepeti/screens/group_detail_page.dart';
+import 'package:alisveris_sepeti/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,93 +36,95 @@ class _GroupsPageState extends State<GroupsPage> {
     final user = FirebaseAuth.instance.currentUser!;
     final groupService = Provider.of<GroupService>(context, listen: false);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Gruplar')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+    return AppScaffold(
+      imagePath: 'assets/images/ten.jpeg',
+      appBar: AppBar(
+        title: const Text('Gruplarım'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
-            ElevatedButton(
+            ElevatedButton.icon(
+              icon: const Icon(Icons.group_add),
+              label: const Text('Grup Oluştur'),
               onPressed: () =>
                   _showCreateGroupDialog(context, groupService, user.uid),
-              child: const Text('Grup Oluştur'),
+              style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12)),
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: _myGroupsStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    if (snapshot.error.toString().contains(
-                      'requires an index',
-                    )) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            'Veritabanı bu sorgu için bir dizin (index) gerektiriyor. Lütfen Debug Console\'daki linki kullanarak Firebase\'de dizini oluşturun.',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      );
-                    }
-                    return Center(
-                      child: Text("Bir hata oluştu: ${snapshot.error}"),
-                    );
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(
-                      child: Text("Henüz bir gruba dahil değilsin."),
-                    );
-                  }
-
-                  final docs = snapshot.data!.docs;
-
-                  return ListView.builder(
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
-                      final groupId = docs[index].id;
-                      final groupName = data['name'] ?? 'Adsız Grup';
-                      final ownerId = data['ownerId'] as String;
-
-                      return Card(
-                        child: ListTile(
-                          title: Text(groupName),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GroupDetailPage(
-                                  groupId: groupId,
-                                  groupName: groupName,
-                                ),
-                              ),
-                            );
-                          },
-                          trailing: ownerId == user.uid
-                              ? DeleteIconButton(
-                                  itemType: "Grup",
-                                  itemName: groupName,
-                                  onDelete: () async {
-                                    final groupService =
-                                        Provider.of<GroupService>(
-                                          context,
-                                          listen: false,
-                                        );
-                                    await groupService.deleteGroup(groupId);
-                                  },
-                                )
-                              : null,
-                        ),
-                      );
-                    },
+            StreamBuilder<QuerySnapshot>(
+              stream: _myGroupsStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                      child: Text("Bir hata oluştu: ${snapshot.error}"));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Card(
+                    color: Colors.white70,
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "Henüz bir gruba dahil değilsin.\nYeni bir grup oluştur.",
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   );
-                },
-              ),
+                }
+
+                final docs = snapshot.data!.docs;
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final groupId = docs[index].id;
+                    final groupName = data['name'] ?? 'Adsız Grup';
+                    final ownerId = data['ownerId'] as String;
+
+                    return Card(
+                      color: Colors.white.withOpacity(0.9),
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      child: ListTile(
+                        title: Text(groupName),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => GroupDetailPage(
+                                groupId: groupId,
+                                groupName: groupName,
+                              ),
+                            ),
+                          );
+                        },
+                        trailing: ownerId == user.uid
+                            ? DeleteIconButton(
+                                itemType: "Grup",
+                                itemName: groupName,
+                                onDelete: () async {
+                                  final groupService =
+                                      Provider.of<GroupService>(context,
+                                          listen: false);
+                                  await groupService.deleteGroup(groupId);
+                                },
+                              )
+                            : null,
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ],
         ),
@@ -130,6 +133,7 @@ class _GroupsPageState extends State<GroupsPage> {
   }
 
   // Yeni bir grup oluşturmak için dialog penceresi gösterir.
+  // DÜZELTME: Fonksiyonun tam hali artık sınıfın içinde, doğru yerde.
   void _showCreateGroupDialog(
     BuildContext context,
     GroupService groupService,

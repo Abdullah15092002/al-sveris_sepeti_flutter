@@ -1,4 +1,5 @@
 // Belirli bir alışveriş listesinin içindeki ürünleri gösterir ve yönetir.
+import 'package:alisveris_sepeti/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,8 +29,13 @@ class _ListDetailPageState extends State<ListDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+    return AppScaffold(
+      imagePath: 'assets/images/red.jpeg',
+      appBar: AppBar(
+        title: Text(widget.title),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: _listStream,
         builder: (context, snapshot) {
@@ -44,50 +50,65 @@ class _ListDetailPageState extends State<ListDetailPage> {
           final data = snapshot.data!.data() as Map<String, dynamic>;
           final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
 
+          if (items.isEmpty) {
+            return const Center(
+              child: Card(
+                color: Colors.white70,
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Bu listede henüz ürün yok.\nYeni bir ürün eklemek için + butonunu kullan.",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            );
+          }
+
           return ListView.builder(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
               final itemName = item['name'] as String;
 
-              return ListTile(
-                title: Text(
-                  itemName,
-                  style: TextStyle(
-                    decoration: item['done']
-                        ? TextDecoration.lineThrough
-                        : null,
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                color: Colors.white.withOpacity(0.9),
+                elevation: 4,
+                child: ListTile(
+                  title: Text(
+                    itemName,
+                    style: TextStyle(
+                      decoration:
+                          item['done'] ? TextDecoration.lineThrough : null,
+                    ),
                   ),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Checkbox(
-                      value: item['done'],
-                      onChanged: (val) {
-                        final listService = Provider.of<ListService>(
-                          context,
-                          listen: false,
-                        );
-                        final updatedItems = List<Map<String, dynamic>>.from(
-                          items,
-                        );
-                        updatedItems[index]['done'] = val;
-                        listService.updateItems(widget.listId, updatedItems);
-                      },
-                    ),
-                    DeleteIconButton(
-                      itemType: "Ürün",
-                      itemName: itemName,
-                      onDelete: () async {
-                        final listService = Provider.of<ListService>(
-                          context,
-                          listen: false,
-                        );
-                        await listService.removeItem(widget.listId, item);
-                      },
-                    ),
-                  ],
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: item['done'],
+                        onChanged: (val) {
+                          final listService =
+                              Provider.of<ListService>(context, listen: false);
+                          final updatedItems =
+                              List<Map<String, dynamic>>.from(items);
+                          updatedItems[index]['done'] = val;
+                          listService.updateItems(widget.listId, updatedItems);
+                        },
+                      ),
+                      DeleteIconButton(
+                        itemType: "Ürün",
+                        itemName: itemName,
+                        onDelete: () async {
+                          final listService =
+                              Provider.of<ListService>(context, listen: false);
+                          await listService.removeItem(widget.listId, item);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

@@ -1,5 +1,6 @@
 // Kullanıcının kendisine ait olan kişisel alışveriş listelerini gösterir.
 import 'package:alisveris_sepeti/screens/list_detail_page.dart';
+import 'package:alisveris_sepeti/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,8 +33,13 @@ class _MyListsPageState extends State<MyListsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Benim Listelerim")),
+    return AppScaffold(
+      imagePath: 'assets/images/white.jpeg',
+      appBar: AppBar(
+        title: const Text("Benim Listelerim"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _myListsStream,
         builder: (context, snapshot) {
@@ -44,12 +50,24 @@ class _MyListsPageState extends State<MyListsPage> {
             return Center(child: Text("Bir hata oluştu: ${snapshot.error}"));
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("Henüz kişisel listen yok"));
+            return const Center(
+              child: Card(
+                color: Colors.white70,
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Henüz kişisel listen yok.\nYeni bir liste eklemek için + butonunu kullan.",
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            );
           }
 
           final docs = snapshot.data!.docs;
 
           return ListView.builder(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
@@ -57,7 +75,9 @@ class _MyListsPageState extends State<MyListsPage> {
               final listTitle = data['title'] ?? 'Adsız Liste';
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                color: Colors.white.withOpacity(0.9),
+                elevation: 4,
                 child: ListTile(
                   title: Text(listTitle),
                   subtitle: Text("Ürün sayısı: ${data['items']?.length ?? 0}"),
@@ -74,10 +94,8 @@ class _MyListsPageState extends State<MyListsPage> {
                     itemType: "Liste",
                     itemName: listTitle,
                     onDelete: () async {
-                      final listService = Provider.of<ListService>(
-                        context,
-                        listen: false,
-                      );
+                      final listService =
+                          Provider.of<ListService>(context, listen: false);
                       await listService.deleteList(listId);
                     },
                   ),

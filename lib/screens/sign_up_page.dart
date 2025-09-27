@@ -1,4 +1,5 @@
 // Yeni kullanıcıların e-posta ve şifre ile uygulamaya kaydolmasını sağlar.
+import 'package:alisveris_sepeti/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:alisveris_sepeti/services/auth_service.dart';
@@ -23,18 +24,17 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  // AuthService'i kullanarak yeni kullanıcı kaydı oluşturur ve hata yönetimi yapar.
+  // Yeni kullanıcı kayıt bilgilerini AuthService'e gönderir.
   Future<void> _signUp() async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    // Not: Bu kısım, isim/soyisim almayan eski signUp metodunuza göre çalışır.
-    // AuthService'i buna göre düzenlemeniz gerekebilir.
     final errorMessage = await authService.signUp(
       email: _emailController.text,
       password: _passwordController.text,
+      // Not: AuthService'deki signUp metodunun da sadece email ve password aldığından emin ol.
     );
 
     if (errorMessage == null && mounted) {
-      Navigator.pop(context); // Başarılı olursa bir önceki sayfaya döner.
+      Navigator.pop(context);
     } else if (mounted) {
       setState(() {
         _errorMessage = errorMessage!;
@@ -44,15 +44,29 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Kayıt Ol')),
-      body: SingleChildScrollView(
-        child: AuthForm(
-          buttonText: 'Kayıt Ol',
-          emailController: _emailController,
-          passwordController: _passwordController,
-          onSubmitted: _signUp,
-          errorMessage: _errorMessage,
+    return AppScaffold(
+      imagePath: 'assets/images/sign_in_sign_up.jpeg',
+      appBar: AppBar(
+        title: const Text('Kayıt Ol'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Card(
+            margin: const EdgeInsets.all(20),
+            elevation: 8,
+            color: Colors.white.withOpacity(0.9),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: AuthForm(
+              buttonText: 'Kayıt Ol',
+              emailController: _emailController,
+              passwordController: _passwordController,
+              onSubmitted: _signUp,
+              errorMessage: _errorMessage,
+            ),
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 // Belirli bir grubun detaylarını, üyelerini ve listelerini gösterir.
 import 'package:alisveris_sepeti/screens/list_detail_page.dart';
+import 'package:alisveris_sepeti/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +28,6 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   late final Stream<QuerySnapshot> _groupListsStream;
   late final Stream<DocumentSnapshot> _groupStream;
 
-  // Sayfa ilk yüklendiğinde grup ve liste verilerini dinleyecek stream'leri başlatır.
   @override
   void initState() {
     super.initState();
@@ -44,8 +44,13 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.groupName)),
+    return AppScaffold(
+      imagePath: 'assets/images/ten.jpeg',
+      appBar: AppBar(
+        title: Text(widget.groupName),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: _groupStream,
         builder: (context, groupSnapshot) {
@@ -60,10 +65,11 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
           final memberIds = List<String>.from(groupData['members'] ?? []);
           final ownerId = groupData['ownerId'] as String;
 
-          return Column(
+          return ListView(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.person_add),
                   label: const Text("Gruba Davet Et"),
@@ -71,29 +77,40 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 ),
               ),
               GroupMembersList(memberIds: memberIds, ownerId: ownerId),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: _groupListsStream,
-                  builder: (context, listsSnapshot) {
-                    if (listsSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (listsSnapshot.hasError) {
-                      return Center(
-                        child: Text("Bir hata oluştu: ${listsSnapshot.error}"),
-                      );
-                    }
-                    if (!listsSnapshot.hasData ||
-                        listsSnapshot.data!.docs.isEmpty) {
-                      return const Center(
-                        child: Text('Bu grupta henüz liste yok.'),
-                      );
-                    }
-
-                    return _buildListsView(listsSnapshot.data!.docs);
-                  },
-                ),
+              StreamBuilder<QuerySnapshot>(
+                stream: _groupListsStream,
+                builder: (context, listsSnapshot) {
+                  if (listsSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(
+                        child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    ));
+                  }
+                  if (listsSnapshot.hasError) {
+                    return Center(
+                      child: Text(
+                          "Listeler yüklenirken bir hata oluştu: ${listsSnapshot.error}"),
+                    );
+                  }
+                  if (!listsSnapshot.hasData ||
+                      listsSnapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Card(
+                        color: Colors.white70,
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text(
+                            "Bu grupta henüz liste yok.\nYeni bir liste oluşturmak için + butonunu kullan.",
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return _buildListsView(listsSnapshot.data!.docs);
+                },
               ),
             ],
           );
@@ -106,12 +123,13 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     );
   }
 
-  // Grup içindeki alışveriş listelerini oluşturan yardımcı metot.
   Widget _buildListsView(List<QueryDocumentSnapshot> docs) {
     final listService = Provider.of<ListService>(context, listen: false);
     final currentUser = FirebaseAuth.instance.currentUser!;
 
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: docs.length,
       itemBuilder: (context, index) {
         final data = docs[index].data() as Map<String, dynamic>;
@@ -120,7 +138,9 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
         final listOwnerId = data['owner'] as String;
 
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          color: Colors.white.withOpacity(0.9),
+          elevation: 4,
           child: ListTile(
             title: Text(listTitle),
             subtitle: Text('Ürün sayısı: ${data['items']?.length ?? 0}'),
@@ -223,9 +243,8 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(errorMessage ?? "Davet gönderildi!"),
-                    backgroundColor: errorMessage != null
-                        ? Colors.red
-                        : Colors.green,
+                    backgroundColor:
+                        errorMessage != null ? Colors.red : Colors.green,
                   ),
                 );
               }

@@ -1,4 +1,5 @@
 // Kullanıcının profil bilgilerini gösterir ve düzenlemesine olanak tanır.
+import 'package:alisveris_sepeti/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -66,15 +67,13 @@ class _ProfilePageState extends State<ProfilePage> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Bilgiler güncellendi')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bilgiler güncellendi')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Hata: $e')));
       }
     }
   }
@@ -88,28 +87,32 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Yükleme durumunda, AppScaffold olmadan basit bir yükleme ekranı göster
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+    return AppScaffold(
+      imagePath: 'assets/images/white.jpeg',
+      appBar: AppBar(
+        title: const Text('Profil'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            color: Colors.white.withOpacity(0.9),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   const CircleAvatar(
-                    radius: 40,
-                    child: Icon(Icons.person, size: 40),
-                  ),
+                      radius: 40, child: Icon(Icons.person, size: 40)),
                   const SizedBox(height: 16),
                   Text(
                     (_nameController.text.isEmpty &&
@@ -132,18 +135,16 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 20),
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            color: Colors.white.withOpacity(0.9),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Bilgileri Düzenle",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text("Bilgileri Düzenle",
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _nameController,
@@ -167,21 +168,16 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 20),
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            color: Colors.white.withOpacity(0.9),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             child: ListTile(
               leading: const Icon(Icons.share),
-              title: Text(
-                _inviteCode,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              subtitle: const Text(
-                "Arkadaşlarını davet etmek için bu kodu paylaş",
-              ),
+              title: Text(_inviteCode,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16)),
+              subtitle:
+                  const Text("Arkadaşlarını davet etmek için bu kodu paylaş"),
               trailing: IconButton(
                 icon: const Icon(Icons.copy, size: 20),
                 onPressed: () {
@@ -203,8 +199,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('Değişiklikleri Kaydet'),
           ),
